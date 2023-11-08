@@ -8,7 +8,7 @@ from PIL import Image
 
 # Load and display the logo
 logo_image = Image.open('lexmed_logo.png')
-st.image(logo_image, width=200)  # Adjust the width as necessary
+st.image(logo_image, width=800)  # Adjust the width as necessary
 
 # Now set the title after the logo
 st.title('LexMed Hearing Whisperer')
