@@ -1,0 +1,12 @@
+import streamlit as st
+
+# Title of the application
+st.title('LexMed Whisper')
+
+# File uploader widget
+uploaded_file = st.file_uploader("Upload your OGG audio file", type=['ogg'])
+
+# You will handle the file processing here later
+if uploaded_file is not None:
+    # Here we'll process the file and call the OpenAI API
+    st.write("File uploaded successfully. Processing...")
