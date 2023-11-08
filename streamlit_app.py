@@ -25,7 +25,7 @@ def srt_to_pdf(srt_text, file_name):
     pdf_buffer.seek(0)
     return pdf_buffer
 
-st.title('SSD Hearing Transcription')
+st.title('SSA Hearing Whisperer')
 
 # Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your OGG audio file", type=['ogg'])
