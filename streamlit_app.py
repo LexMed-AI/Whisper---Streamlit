@@ -11,7 +11,7 @@ logo_image = Image.open('lexmed_logo.png')
 st.image(logo_image, width=800)  # Adjust the width as necessary
 
 # Now set the title after the logo
-st.title('LexMed Hearing Whisperer')
+st.title('Hearing Whisperer')
 
 # ... rest of your Streamlit app code ...
 
