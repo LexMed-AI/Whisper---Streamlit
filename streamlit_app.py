@@ -11,14 +11,34 @@ logo_image = Image.open('lexmed_logo.png')
 st.image(logo_image, width=800)  # Adjust the width as necessary
 st.title('Hearing Whisperer')
 
-
-
 import requests
 import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from io import BytesIO
+
+def add_speaker_labels(transcript):
+    lines = transcript.split('\n')
+    processed_lines = []
+    speaker_cues = {
+        # Define keywords or phrases that indicate a speaker change
+        "claimant": ["I believe", "My condition", "I cannot", "hurt"],
+        "attorney": ["My client", "Objection", "No objections"],
+        "ALJ": ["Hearing will come to order", "Please state your name", "What is your opinion", "Thank you"],
+        "VE": ["In my professional opinion", "DOT Code", "Given these restrictions", "national economy"],
+        "ME": ["Medically speaking", "From a medical standpoint"]
+    }
+    current_speaker = None
+    for line in lines:
+        for speaker, cues in speaker_cues.items():
+            if any(cue in line for cue in cues):
+                current_speaker = speaker
+                break
+        if current_speaker:
+            line = f"[{current_speaker.upper()}]: {line}"
+        processed_lines.append(line)
+    return '\n'.join(processed_lines)
 
 # Function to convert SRT text to PDF
 def srt_to_pdf(srt_text, file_name):
