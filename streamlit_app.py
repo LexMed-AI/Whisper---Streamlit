@@ -1,4 +1,20 @@
 import streamlit as st
+import streamlit as st
+from PIL import Image
+# ... other import statements ...
+
+# Define any functions you need
+# ...
+
+# Load and display the logo
+logo_image = Image.open('lexmed_logo.png')
+st.image(logo_image, width=200)  # Adjust the width as necessary
+
+# Now set the title after the logo
+st.title('LexMed Hearing Whisperer')
+
+# ... rest of your Streamlit app code ...
+
 import requests
 import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
