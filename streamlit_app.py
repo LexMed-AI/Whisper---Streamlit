@@ -58,21 +58,21 @@ def extract_metadata_from_html(zip_file):
             with zip_ref.open(index_file[0]) as file:
                 soup = BeautifulSoup(file, 'html.parser')
                 
-                # Safely extracting information from the HTML
-                claimant_element = soup.find(text="Claimant:")
-                claimant = claimant_element.find_next().text if claimant_element else "Not Found"
+                # Example of refined searches
+                claimant_element = soup.find('div', {'id': 'claimant-info'})
+                claimant = claimant_element.get_text().strip() if claimant_element else "Not Found"
                 
-                judge_element = soup.find(text="Judge/Owner")
-                judge = judge_element.find_next().text if judge_element else "Not Found"
+                judge_element = soup.find('span', {'class': 'judge-name'})
+                judge = judge_element.get_text().strip() if judge_element else "Not Found"
                 
-                hearing_date_element = soup.find(text="Hearing Date")
-                hearing_date = hearing_date_element.find_next().text if hearing_date_element else "Not Found"
+                hearing_date_element = soup.find('p', {'class': 'hearing-date'})
+                hearing_date = hearing_date_element.get_text().strip() if hearing_date_element else "Not Found"
 
                 metadata = {
                     "claimant_name": claimant,
                     "judge_name": judge,
                     "hearing_date": hearing_date,
-                    # Add more fields as needed
+                    # Additional fields
                 }
                 return metadata
         else:
