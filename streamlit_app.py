@@ -102,7 +102,6 @@ c.save()
 pdf_buffer.seek(0)
 return pdf_buffer
 
-```
 
 # Function to extract metadata from zip file
 def extract_metadata(zip_file):
