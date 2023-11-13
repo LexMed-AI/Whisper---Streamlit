@@ -3,6 +3,7 @@ from PIL import Image
 from io import BytesIO
 import zipfile
 import os
+from bs4 import BeautifulSoup  # Import BeautifulSoup
 import json
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -23,12 +24,11 @@ def add_speaker_labels_and_metadata(transcript, metadata):
     
     # Add timestamps and process the rest of the transcript
     for line in transcript.split('\n'):
-        if '-->' in line:  # Identify timestamp lines
+        if '-->' in line:
             timestamp = line.strip()
-            processed_text += f"[{timestamp}] "  # Add timestamp to the transcript
+            processed_text += f"[{timestamp}] "
         else:
             processed_text += f"{line}\n"
-
     return processed_text
 
 # Function to convert SRT text to PDF
@@ -50,6 +50,7 @@ def srt_to_pdf(srt_text, file_name):
     pdf_buffer.seek(0)
     return pdf_buffer
 
+# Function to extract metadata from index.html inside a zip file
 def extract_metadata_from_html(zip_file):
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         index_file = [f for f in zip_ref.namelist() if 'index.html' in f]
@@ -57,19 +58,17 @@ def extract_metadata_from_html(zip_file):
             with zip_ref.open(index_file[0]) as file:
                 soup = BeautifulSoup(file, 'html.parser')
                 
-                # Extracting information from the HTML
+                # Extract metadata based on the structure of your index.html
                 claimant = soup.find(text="Claimant:").find_next().text
-                ssn = soup.find(text="Claimant SSN:").find_next().text
                 judge = soup.find(text="Judge/Owner").find_next().text
                 hearing_date = soup.find(text="Hearing Date").find_next().text
-
-                # Add more fields as necessary based on the HTML structure
+                # Additional fields extraction can be added here
 
                 metadata = {
                     "claimant_name": claimant,
-                    "claimant_ssn": ssn,
                     "judge_name": judge,
-                    "hearing_date": hearing_date
+                    "hearing_date": hearing_date,
+                    "appearances": ["Example Claimant", "Example Attorney", "Example Expert"] # Update as needed
                 }
                 return metadata
         else:
@@ -79,30 +78,19 @@ def extract_metadata_from_html(zip_file):
 # Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your Zip or OGG audio file", type=['zip', 'ogg'])
 
+# Handling the uploaded file
 if uploaded_file is not None:
+    # Process Zip files
     if uploaded_file.name.endswith('.zip'):
-        # Process Zip file
-        metadata = extract_metadata(uploaded_file)
+        metadata = extract_metadata_from_html(uploaded_file)
         if metadata:
             st.write("Metadata extracted:", metadata)
+            # Continue with additional processing for Zip files...
         else:
-            st.error("No metadata file found in the zip.")
+            st.error("Failed to extract metadata.")
 
-        # Assuming you need to extract an OGG file from the zip
-        with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
-            ogg_files = [f for f in zip_ref.namelist() if f.endswith('.ogg')]
-            if ogg_files:
-                ogg_file_path = ogg_files[0]
-                zip_ref.extract(ogg_file_path)
-                audio_file = open(ogg_file_path, 'rb')
-                # Process the OGG file (same as below)
-                # [Insert OGG file processing code here]
-                os.remove(ogg_file_path)  # Clean up extracted file
-            else:
-                st.error("No OGG audio file found in the zip.")
-
+    # Process OGG files
     elif uploaded_file.name.endswith('.ogg'):
-        # Process OGG file directly
         file_content = uploaded_file.read()
 
         m = MultipartEncoder(
@@ -119,7 +107,6 @@ if uploaded_file is not None:
         }
 
         st.write("Processing the audio file...")
-
         response = requests.post(
             url='https://api.openai.com/v1/audio/transcriptions',
             data=m,
@@ -131,7 +118,6 @@ if uploaded_file is not None:
         else:
             try:
                 srt_transcription = response.json()['text']
-                # Assume metadata is already extracted from earlier
                 srt_transcription_processed = add_speaker_labels_and_metadata(srt_transcription, metadata)
                 pdf_file_buffer = srt_to_pdf(srt_transcription_processed, 'Transcription.pdf')
 
@@ -145,6 +131,5 @@ if uploaded_file is not None:
             except json.JSONDecodeError:
                 st.error("Failed to parse the response as JSON.")
                 st.text(response.text)
-
     else:
         st.error("Unsupported file format.")
