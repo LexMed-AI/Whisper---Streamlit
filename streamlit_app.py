@@ -100,7 +100,7 @@ for line in srt_text.split('\\n'):
 
 c.save()
 pdf_buffer.seek(0)
-return pdf_buffer
+    return pdf_buffer
 
 
 # Function to extract metadata from zip file
