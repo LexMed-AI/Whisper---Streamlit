@@ -88,7 +88,7 @@ def srt_to_pdf(srt_text, file_name):
     pdf_buffer = BytesIO()
     c = canvas.Canvas(pdf_buffer, pagesize=letter)
     c.setTitle(file_name)
-       ```
+     
 y_position = 750
 for line in srt_text.split('\\n'):
     if not line.strip().isdigit() and line.strip() != '':
