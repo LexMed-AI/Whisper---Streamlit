@@ -4,47 +4,59 @@ from io import BytesIO
 import zipfile
 import os
 import json
-from bs4 import BeautifulSoup  # Import BeautifulSoup for parsing HTML
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 # Load and display the logo
-
 logo_image = Image.open('lexmed_logo.png')
 st.image(logo_image, width=800)
 st.title('Hearing Whisperer')
 
 # Function to add speaker labels to the transcript
-
 def add_speaker_labels(transcript):
-    # [Existing code for add_speaker_labels remains unchanged]
+    # Add metadata at the beginning of the transcript
+    processed_text = f"Title: TRANSCRIPT of the Social Security Disability Hearing for {metadata['claimant_name']}\n"
+    processed_text += f"Claimant: {metadata['claimant_name']}\n"
+    processed_text += f"Administrative Law Judge: {metadata['judge_name']}\n"
+    processed_text += f"Appearances: {', '.join(metadata['appearances'])}\n\n"
+
+    # Add timestamps and process the rest of the transcript
+    for line in srt_text.split('\n'):
+        if '-->' in line:  # Identify timestamp lines
+            timestamp = line.strip()
+            processed_text += f"[{timestamp}] "  # Add timestamp to the transcript
+        else:
+            processed_text += f"{line}\n"
+
+    return processed_text
+
+# Example usage
+metadata = {
+    "claimant_name": "John Doe",
+    "judge_name": "Jane Smith",
+    "appearances": ["John Doe Claimant", "Jane Lawyer Attorney for Claimant", "Alex Expert Vocational Expert"]
+}
+srt_transcription_processed = preprocess_transcript(srt_transcription, metadata)
+
 
 # Function to convert SRT text to PDF
-
 def srt_to_pdf(srt_text, file_name):
     # [Existing code for srt_to_pdf remains unchanged]
 
 # Function to extract metadata from zip file
-
-def extract_metadata_from_index(zip_file):
+def extract_metadata(zip_file):
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-        index_file = [f for f in zip_ref.namelist() if 'index.html' in f]
-        if index_file:
-            with zip_ref.open(index_file[0]) as file:
-                soup = BeautifulSoup(file, 'html.parser')
-                # Extract required metadata from the HTML
-                # This needs to be adjusted based on the structure of your HTML file
-                metadata = {}
-                # Example: metadata['title'] = soup.title.string
-                # Add more extraction logic as per your HTML structure
-                return metadata
+        # Assuming metadata is in a JSON file inside the zip
+        metadata_file = [f for f in zip_ref.namelist() if f.endswith('.json')]
+        if metadata_file:
+            metadata_content = zip_ref.read(metadata_file[0])
+            return json.loads(metadata_content)
         else:
             return None
 
 # Streamlit file uploader
-
 uploaded_file = st.file_uploader("Upload your Zip or OGG audio file", type=['zip', 'ogg'])
 
 if uploaded_file is not None:
@@ -89,7 +101,7 @@ if uploaded_file is not None:
         st.write("Processing the audio file...")
 
         response = requests.post(
-            url='<https://api.openai.com/v1/audio/transcriptions>',
+            url='https://api.openai.com/v1/audio/transcriptions',
             data=m,
             headers=headers
         )
@@ -115,15 +127,3 @@ if uploaded_file is not None:
 
     else:
         st.error("Unsupported file format.")
-
-# Example usage in your Streamlit file uploader section
-if uploaded_file is not None:
-    if uploaded_file.name.endswith('.zip'):
-        # Process Zip file
-        metadata = extract_metadata_from_index(uploaded_file)
-        if metadata:
-            st.write("Metadata extracted:", metadata)
-        else:
-            st.error("No index.html file found in the zip.")
-        
-        # [Continue with OGG file extraction and processing as before]
