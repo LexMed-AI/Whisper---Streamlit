@@ -50,14 +50,30 @@ def srt_to_pdf(srt_text, file_name):
     pdf_buffer.seek(0)
     return pdf_buffer
 
-# Function to extract metadata from zip file
-def extract_metadata(zip_file):
+def extract_metadata_from_html(zip_file):
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-        metadata_file = [f for f in zip_ref.namelist() if f.endswith('.json')]
-        if metadata_file:
-            metadata_content = zip_ref.read(metadata_file[0])
-            return json.loads(metadata_content)
+        index_file = [f for f in zip_ref.namelist() if 'index.html' in f]
+        if index_file:
+            with zip_ref.open(index_file[0]) as file:
+                soup = BeautifulSoup(file, 'html.parser')
+                
+                # Extracting information from the HTML
+                claimant = soup.find(text="Claimant:").find_next().text
+                ssn = soup.find(text="Claimant SSN:").find_next().text
+                judge = soup.find(text="Judge/Owner").find_next().text
+                hearing_date = soup.find(text="Hearing Date").find_next().text
+
+                # Add more fields as necessary based on the HTML structure
+
+                metadata = {
+                    "claimant_name": claimant,
+                    "claimant_ssn": ssn,
+                    "judge_name": judge,
+                    "hearing_date": hearing_date
+                }
+                return metadata
         else:
+            st.error("No index.html file found in the zip.")
             return None
 
 # Streamlit file uploader
