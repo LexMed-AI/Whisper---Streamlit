@@ -58,22 +58,27 @@ def extract_metadata_from_html(zip_file):
             with zip_ref.open(index_file[0]) as file:
                 soup = BeautifulSoup(file, 'html.parser')
                 
-                # Extract metadata based on the structure of your index.html
-                claimant = soup.find(text="Claimant:").find_next().text
-                judge = soup.find(text="Judge/Owner").find_next().text
-                hearing_date = soup.find(text="Hearing Date").find_next().text
-                # Additional fields extraction can be added here
+                # Safely extracting information from the HTML
+                claimant_element = soup.find(text="Claimant:")
+                claimant = claimant_element.find_next().text if claimant_element else "Not Found"
+                
+                judge_element = soup.find(text="Judge/Owner")
+                judge = judge_element.find_next().text if judge_element else "Not Found"
+                
+                hearing_date_element = soup.find(text="Hearing Date")
+                hearing_date = hearing_date_element.find_next().text if hearing_date_element else "Not Found"
 
                 metadata = {
                     "claimant_name": claimant,
                     "judge_name": judge,
                     "hearing_date": hearing_date,
-                    "appearances": ["Example Claimant", "Example Attorney", "Example Expert"] # Update as needed
+                    # Add more fields as needed
                 }
                 return metadata
         else:
             st.error("No index.html file found in the zip.")
             return None
+
 
 # Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your Zip or OGG audio file", type=['zip', 'ogg'])
