@@ -63,60 +63,6 @@ def extract_metadata(zip_file):
 # Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your Zip or OGG audio file", type=['zip', 'ogg'])
 
-# Rest of the code for file processing
-# ...
-
-# Example usage (within the appropriate section of the file processing code)
-if uploaded_file is not None and uploaded_file.name.endswith('.ogg'):
-    # Process OGG file
-    # ...
-    srt_transcription = response.json()['text']
-    metadata = {
-        "claimant_name": "John Doe",
-        "judge_name": "Jane Smith",
-        "appearances": ["John Doe Claimant", "Jane Lawyer Attorney for Claimant", "Alex Expert Vocational Expert"]
-    }
-    srt_transcription_processed = add_speaker_labels_and_metadata(srt_transcription, metadata)
-    pdf_file_buffer = srt_to_pdf(srt_transcription_processed, 'Transcription.pdf')
-    # ...
-
-
-
-# Function to convert SRT text to PDF
-def srt_to_pdf(srt_text, file_name):
-   def srt_to_pdf(srt_text, file_name):
-    pdf_buffer = BytesIO()
-    c = canvas.Canvas(pdf_buffer, pagesize=letter)
-    c.setTitle(file_name)
-     
-y_position = 750
-for line in srt_text.split('\\n'):
-    if not line.strip().isdigit() and line.strip() != '':
-        c.drawString(72, y_position, line)
-        y_position -= 15
-        if y_position < 72:
-            y_position = 750
-            c.showPage()
-
-c.save()
-pdf_buffer.seek(0)
-    return pdf_buffer
-
-
-# Function to extract metadata from zip file
-def extract_metadata(zip_file):
-    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-        # Assuming metadata is in a JSON file inside the zip
-        metadata_file = [f for f in zip_ref.namelist() if f.endswith('.json')]
-        if metadata_file:
-            metadata_content = zip_ref.read(metadata_file[0])
-            return json.loads(metadata_content)
-        else:
-            return None
-
-# Streamlit file uploader
-uploaded_file = st.file_uploader("Upload your Zip or OGG audio file", type=['zip', 'ogg'])
-
 if uploaded_file is not None:
     if uploaded_file.name.endswith('.zip'):
         # Process Zip file
@@ -169,8 +115,9 @@ if uploaded_file is not None:
         else:
             try:
                 srt_transcription = response.json()['text']
-                srt_transcription_labeled = add_speaker_labels(srt_transcription)
-                pdf_file_buffer = srt_to_pdf(srt_transcription_labeled, 'Transcription.pdf')
+                # Assume metadata is already extracted from earlier
+                srt_transcription_processed = add_speaker_labels_and_metadata(srt_transcription, metadata)
+                pdf_file_buffer = srt_to_pdf(srt_transcription_processed, 'Transcription.pdf')
 
                 st.download_button(
                     label="Download Transcript as PDF",
