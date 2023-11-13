@@ -25,14 +25,16 @@ def add_speaker_labels(transcript):
     }
     current_speaker = None
     for line in lines:
+        found_cue = False
         for speaker, cues in speaker_cues.items():
             if any(cue in line for cue in cues):
                 current_speaker = speaker
+                found_cue = True
                 break
-        else:  # Continue to next line if no speaker cue found
-            current_speaker = None
-        if current_speaker:
+        if found_cue:
             line = f"[{current_speaker.upper()}]: {line}"
+        else:
+            line = f"[UNKNOWN]: {line}"  # Mark lines where the speaker is unknown
         processed_lines.append(line)
     return '\n'.join(processed_lines)
 
