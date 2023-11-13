@@ -7,10 +7,12 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from io import BytesIO
 
+# Load and display the logo
 logo_image = Image.open('lexmed_logo.png')
 st.image(logo_image, width=800)
 st.title('Hearing Whisperer')
 
+# Function to add speaker labels to the transcript
 def add_speaker_labels(transcript):
     lines = transcript.split('\n')
     processed_lines = []
@@ -27,18 +29,21 @@ def add_speaker_labels(transcript):
             if any(cue in line for cue in cues):
                 current_speaker = speaker
                 break
+        else:  # Continue to next line if no speaker cue found
+            current_speaker = None
         if current_speaker:
             line = f"[{current_speaker.upper()}]: {line}"
         processed_lines.append(line)
     return '\n'.join(processed_lines)
 
+# Function to convert SRT text to PDF
 def srt_to_pdf(srt_text, file_name):
     pdf_buffer = BytesIO()
     c = canvas.Canvas(pdf_buffer, pagesize=letter)
     c.setTitle(file_name)
 
     y_position = 750
-    for line in srt_text.split('\n'):  # Fixed split character
+    for line in srt_text.split('\n'):
         if not line.strip().isdigit() and line.strip() != '':
             c.drawString(72, y_position, line)
             y_position -= 15
@@ -50,6 +55,7 @@ def srt_to_pdf(srt_text, file_name):
     pdf_buffer.seek(0)
     return pdf_buffer
 
+# Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your OGG audio file", type=['ogg'])
 
 if uploaded_file is not None:
@@ -88,7 +94,7 @@ if uploaded_file is not None:
 
             st.download_button(
                 label="Download Transcript as PDF",
-                data=pdf_file_buffer,
+                data=pdf_buffer,
                 file_name='Transcription.pdf',
                 mime='application/pdf'
             )
