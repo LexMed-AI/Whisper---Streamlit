@@ -44,7 +44,7 @@ def enhanced_process_ogg_file(uploaded_file):
         # ... existing error handling ...
 
 # Function to add speaker labels and metadata to the transcript
-def add_speaker_labels_and_metadata(transcript, metadata):
+    def add_speaker_labels_and_metadata(transcript, metadata):
         processed_text = f"Title: TRANSCRIPT of the Social Security Disability Hearing for {metadata['claimant_name']}\n"
         processed_text += f"Claimant: {metadata['claimant_name']}\n"
         processed_text += f"Administrative Law Judge: {metadata['judge_name']}\n"
