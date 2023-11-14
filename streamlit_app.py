@@ -4,15 +4,42 @@ from io import BytesIO
 import zipfile
 import os
 from bs4 import BeautifulSoup  # Import BeautifulSoup
+import json
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
+from pydub import AudioSegment
 
 # Load and display the logo
 logo_image = Image.open('lexmed_logo.png')
 st.image(logo_image, width=800)
 st.title('Hearing Whisperer')
+
+def convert_ogg_to_mp3(ogg_file_path, mp3_file_path):
+    """
+    Convert an OGG file to MP3 format.
+    """
+    audio = AudioSegment.from_ogg(ogg_file_path)
+    audio.export(mp3_file_path, format="mp3")
+
+def enhanced_process_ogg_file(uploaded_file):
+    try:
+        # Convert the OGG file to MP3
+        ogg_file_path = "temp_ogg_file.ogg"
+        mp3_file_path = "temp_converted_file.mp3"
+        
+        with open(ogg_file_path, 'wb') as f:
+            f.write(uploaded_file.getvalue())
+        
+        convert_ogg_to_mp3(ogg_file_path, mp3_file_path)
+        
+        # Read the converted MP3 file
+        with open(mp3_file_path, 'rb') as mp3_file:
+            file_content = mp3_file.read()
+
+    except Exception as e:
+        # ... existing error handling ...
 
 # Function to add speaker labels and metadata to the transcript
 def add_speaker_labels_and_metadata(transcript, metadata):
