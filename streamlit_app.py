@@ -2,7 +2,6 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 import zipfile
-from pydub import AudioSegment
 import os
 from bs4 import BeautifulSoup  # Import BeautifulSoup
 import json
@@ -16,33 +15,23 @@ logo_image = Image.open('lexmed_logo.png')
 st.image(logo_image, width=800)
 st.title('Hearing Whisperer')
 
-def convert_ogg_to_mp3(ogg_file_path, mp3_file_path):
-    """
-    Convert an OGG file to MP3 format.
-    """
-    audio = AudioSegment.from_ogg(ogg_file_path)
-    audio.export(mp3_file_path, format="mp3")
+# Function to add speaker labels and metadata to the transcript
+def add_speaker_labels_and_metadata(transcript, metadata):
+    processed_text = f"Title: TRANSCRIPT of the Social Security Disability Hearing for {metadata['claimant_name']}\n"
+    processed_text += f"Claimant: {metadata['claimant_name']}\n"
+    processed_text += f"Administrative Law Judge: {metadata['judge_name']}\n"
+    processed_text += f"Appearances: {', '.join(metadata['appearances'])}\n\n"
+    
+    # Add timestamps and process the rest of the transcript
+    for line in transcript.split('\n'):
+        if '-->' in line:
+            timestamp = line.strip()
+            processed_text += f"[{timestamp}] "
+        else:
+            processed_text += f"{line}\n"
+    return processed_text
 
-def enhanced_process_ogg_file(uploaded_file):
-    try:
-        # Convert the OGG file to MP3
-        ogg_file_path = "temp_ogg_file.ogg"
-        mp3_file_path = "temp_converted_file.mp3"
-        
-        with open(ogg_file_path, 'wb') as f:
-            f.write(uploaded_file.getvalue())
-        
-        convert_ogg_to_mp3(ogg_file_path, mp3_file_path)
-        
-        # Read the converted MP3 file
-        with open(mp3_file_path, 'rb') as mp3_file:
-            file_content = mp3_file.read()
-
-        # ... rest of the existing implementation for API request ...
-
-    except Exception as e:
-        # ... existing error handling ...
-
+# Function to convert SRT text to PDF
 def srt_to_pdf(srt_text, file_name):
     pdf_buffer = BytesIO()
     c = canvas.Canvas(pdf_buffer, pagesize=letter)
