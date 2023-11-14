@@ -105,19 +105,27 @@ def enhanced_process_ogg_file(uploaded_file):
                 'response_format': 'srt'
             }
         )
+
         headers = {
             'Authorization': f'Bearer {st.secrets["OPENAI_API_KEY"]}',
             'Content-Type': m.content_type
         }
+
         st.write("Processing the audio file...")
         response = requests.post(
             url='https://api.openai.com/v1/audio/transcriptions',
             data=m,
             headers=headers,
-            timeout=60  # Set a reasonable timeout for the request
+            timeout=60
         )
+
         if response.status_code == 200:
-            return response.json()['text']
+            try:
+                return response.json()['text']
+            except json.JSONDecodeError:
+                logging.error(f"JSON parsing error. Response content: {response.text}")
+                st.error("Failed to parse the response as JSON. Check logs for details.")
+                return None
         else:
             st.error(f"Failed to transcribe audio. Status code: {response.status_code}. Response text: {response.text}")
             return None
@@ -125,8 +133,6 @@ def enhanced_process_ogg_file(uploaded_file):
         st.error("The transcription request timed out. Please try again.")
     except requests.exceptions.RequestException as e:
         st.error(f"A network error occurred: {e}")
-    except json.JSONDecodeError:
-        st.error("Failed to parse the response as JSON.")
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
         logging.error(f"OGG file processing error: {e}")
