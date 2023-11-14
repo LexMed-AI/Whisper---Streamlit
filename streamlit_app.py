@@ -45,10 +45,10 @@ def enhanced_process_ogg_file(uploaded_file):
 
 # Function to add speaker labels and metadata to the transcript
 def add_speaker_labels_and_metadata(transcript, metadata):
-    processed_text = f"Title: TRANSCRIPT of the Social Security Disability Hearing for {metadata['claimant_name']}\n"
-    processed_text += f"Claimant: {metadata['claimant_name']}\n"
-    processed_text += f"Administrative Law Judge: {metadata['judge_name']}\n"
-    processed_text += f"Appearances: {', '.join(metadata['appearances'])}\n\n"
+        processed_text = f"Title: TRANSCRIPT of the Social Security Disability Hearing for {metadata['claimant_name']}\n"
+        processed_text += f"Claimant: {metadata['claimant_name']}\n"
+        processed_text += f"Administrative Law Judge: {metadata['judge_name']}\n"
+        processed_text += f"Appearances: {', '.join(metadata['appearances'])}\n\n"
     
     # Add timestamps and process the rest of the transcript
     for line in transcript.split('\n'):
