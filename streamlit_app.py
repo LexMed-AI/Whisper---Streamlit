@@ -1,6 +1,7 @@
 import streamlit as st
 from PIL import Image
 from io import BytesIO
+import zipfile
 import os
 from bs4 import BeautifulSoup  # Import BeautifulSoup
 import json
@@ -49,9 +50,50 @@ def srt_to_pdf(srt_text, file_name):
     pdf_buffer.seek(0)
     return pdf_buffer
 
+# Function to extract metadata from index.html inside a zip file
+def extract_metadata_from_html(zip_file):
+    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+        index_file = [f for f in zip_ref.namelist() if 'index.html' in f]
+        if index_file:
+            with zip_ref.open(index_file[0]) as file:
+                soup = BeautifulSoup(file, 'html.parser')
+                
+                # Example of refined searches
+                claimant_element = soup.find('div', {'id': 'claimant-info'})
+                claimant = claimant_element.get_text().strip() if claimant_element else "Not Found"
+                
+                judge_element = soup.find('span', {'class': 'judge-name'})
+                judge = judge_element.get_text().strip() if judge_element else "Not Found"
+                
+                hearing_date_element = soup.find('p', {'class': 'hearing-date'})
+                hearing_date = hearing_date_element.get_text().strip() if hearing_date_element else "Not Found"
+
+                metadata = {
+                    "claimant_name": claimant,
+                    "judge_name": judge,
+                    "hearing_date": hearing_date,
+                    # Additional fields
+                }
+                return metadata
+        else:
+            st.error("No index.html file found in the zip.")
+            return None
+
 
 # Streamlit file uploader
-uploaded_file = st.file_uploader("Upload your OGG audio file", type=['ogg'])
+uploaded_file = st.file_uploader("Upload your Zip or OGG audio file", type=['zip', 'ogg'])
+
+# Handling the uploaded file
+if uploaded_file is not None:
+    # Process Zip files
+    if uploaded_file.name.endswith('.zip'):
+        metadata = extract_metadata_from_html(uploaded_file)
+        if metadata:
+            st.write("Metadata extracted:", metadata)
+            # Continue with additional processing for Zip files...
+        else:
+            st.error("Failed to extract metadata.")
+
     # Process OGG files
     elif uploaded_file.name.endswith('.ogg'):
         file_content = uploaded_file.read()
