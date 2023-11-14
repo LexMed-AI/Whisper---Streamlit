@@ -105,7 +105,38 @@ if uploaded_file is not None:
                 'response_format': 'srt'
             }
         )
+    from pydub import AudioSegment
 
+def convert_ogg_to_mp3(ogg_file_path, mp3_file_path):
+    """
+    Convert an OGG file to MP3 format.
+    """
+    audio = AudioSegment.from_ogg(ogg_file_path)
+    audio.export(mp3_file_path, format="mp3")
+
+def enhanced_process_ogg_file(uploaded_file):
+    try:
+        # Convert the OGG file to MP3
+        ogg_file_path = "temp_ogg_file.ogg"
+        mp3_file_path = "temp_converted_file.mp3"
+        
+        with open(ogg_file_path, 'wb') as f:
+            f.write(uploaded_file.getvalue())
+        
+        convert_ogg_to_mp3(ogg_file_path, mp3_file_path)
+        
+        # Read the converted MP3 file
+        with open(mp3_file_path, 'rb') as mp3_file:
+            file_content = mp3_file.read()
+
+    except Exception as e:
+        # ... existing error handling ...
+
+# ... rest of the script ...
+
+        
+        
+        
         headers = {
             'Authorization': f'Bearer {st.secrets["OPENAI_API_KEY"]}',
             'Content-Type': m.content_type
