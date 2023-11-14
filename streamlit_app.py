@@ -117,20 +117,22 @@ def enhanced_process_ogg_file(uploaded_file):
             timeout=60  # Set a reasonable timeout for the request
         )
         if response.status_code == 200:
-            return response.json()['text']
+            try:
+                return response.json()['text']
+            except json.JSONDecodeError:
+                # Log or print the raw response for debugging
+                logging.error(f"JSON parsing error. Response content: {response.content}")
+                st.error("Failed to parse the response as JSON. Please check the logs.")
+                return None
         else:
-            st.error(f"Failed to transcribe audio. Status code: {response.status_code}. Response text: {response.text}")
-            return None
+            # ... existing error handling ...
+            
     except requests.exceptions.Timeout:
-        st.error("The transcription request timed out. Please try again.")
+        # ... existing error handling ...
     except requests.exceptions.RequestException as e:
-        st.error(f"A network error occurred: {e}")
-    except json.JSONDecodeError:
-        st.error("Failed to parse the response as JSON.")
+        # ... existing error handling ...
     except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
-        logging.error(f"OGG file processing error: {e}")
-        return None
+        # ... existing error handling ...
 
 # Main function of the script
 def main():
